@@ -128,13 +128,30 @@ void type_executer (std::stringstream &X) {
   }
 }
 
+
 void cd_executer(std::stringstream &X) {
   std::string path;
-  if (!(X >> path)) {
-    std::cerr << "cd: missing operand" << std::endl;
+  if (!(X >> path) || path == "~") {
+    const char* home = getenv("HOME");
+    if (home == nullptr) {
+      std::cerr << "cd: HOME not set" << std::endl;
+      return;
+    }
+    if (chdir(home) != 0) {
+      perror("cd");
+    }
     return;
   }
-  
+
+  if (path.rfind("~/", 0) == 0) {
+    const char* home = getenv("HOME");
+    if (home == nullptr) {
+      std::cerr << "cd: HOME not set" << std::endl;
+      return;
+    }
+    path = std::string(home) + path.substr(1); // Replace ~ with HOME
+  }
+
   if (chdir(path.c_str()) != 0) {
     perror("cd");
   }
