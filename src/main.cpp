@@ -4,11 +4,13 @@
 #include <ostream>
 #include <sstream>
 #include <string>
+#include <unistd.h> 
 
 enum shell_command {
   Echo,
   Exit,
   Type,
+  Cd,
   Custom
 };
 
@@ -18,6 +20,7 @@ int command_converter (std::string command);
 void echo_executer (std::stringstream &X);
 void type_executer(std::stringstream &X);
 void custom_executer (std::stringstream &X, const std::string command);
+void cd_executer(std::stringstream &X);
 
 std::stringstream input_taker () {
   std::string input;
@@ -57,6 +60,10 @@ int main() {
         custom_executer(X, command);
         break;
 
+      case Cd:
+        cd_executer(X);
+        break;
+
       case Exit:
         exit(0);
     }
@@ -83,6 +90,7 @@ int command_converter (std::string command) {
   if (command == "type") return Type;
   if (command == "exit") return Exit;
   if (command == "echo") return Echo;
+  if (command == "cd")   return Cd;
 
   return Custom;
 }
@@ -117,6 +125,18 @@ void type_executer (std::stringstream &X) {
           std::cout << words << ": not found" << std::endl;
         break;
     }
+  }
+}
+
+void cd_executer(std::stringstream &X) {
+  std::string path;
+  if (!(X >> path)) {
+    std::cerr << "cd: missing operand" << std::endl;
+    return;
+  }
+  
+  if (chdir(path.c_str()) != 0) {
+    perror("cd");
   }
 }
 
